@@ -9,10 +9,10 @@ COPY src/index.js src/package.json ./
 RUN apk update && apk add --no-cache bash openssl curl && \
     npm install && \
     curl -sL -o /usr/local/bin/komari-agent \
-      https://github.com/komari-monitor/komari/releases/latest/download/komari-agent-linux-amd64 && \
+      https://github.com/komari-monitor/komari-agent/releases/latest/download/komari-agent-linux-amd64 && \
     chmod +x /usr/local/bin/komari-agent index.js
 
-COPY start.sh /app/start.sh
+COPY start.sh tg-notify.js /app/
 RUN chmod +x /app/start.sh
 
 EXPOSE 3000
