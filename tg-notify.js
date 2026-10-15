@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // TG bot 推送节点订阅信息（独立脚本，不修改 index.js 源码）
 // 等待主程序启动后，从本地获取订阅内容并通过 Telegram bot 发送
+// 推送两条：一条普通节点订阅，一条 TG 代理链接
 
 const http = require('http');
 const fs = require('fs');
@@ -23,7 +24,7 @@ async function sendTelegram() {
   let sub = null;
   for (let i = 0; i < 12; i++) {
     try {
-      sub = await fetchSub();
+      sub = await fetchPath(`/${SUB_PATH}`);
       if (sub) break;
     } catch (e) { /* retry */ }
     await new Promise(r => setTimeout(r, 5000));
@@ -46,24 +47,42 @@ async function sendTelegram() {
   } catch (e) { /* first run, no hash file */ }
 
   try {
-    const message = `${NAME}节点推送\n<pre>${sub}</pre>`;
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    const params = new URLSearchParams({
-      chat_id: CHAT_ID,
-      text: message,
-      parse_mode: 'HTML'
-    });
-    await fetch(`${url}?${params}`, { method: 'POST' });
+    // 第一条：普通节点订阅
+    await sendMessage(`${NAME}节点推送\n<pre>${sub}</pre>`);
+
+    // 第二条：TG 代理链接
+    try {
+      const tgInfo = await fetchPath(`/${SUB_PATH}-tg`);
+      if (tgInfo) {
+        // 提取 t.me 链接
+        const match = tgInfo.match(/https:\/\/t\.me\/webproxy\?[^\s]+/);
+        const tgLink = match ? match[0] : tgInfo.trim();
+        await sendMessage(`${NAME} TG代理\n${tgLink}`);
+      }
+    } catch (e) {
+      console.log('[tg-notify] failed to fetch TG link:', e.message);
+    }
+
     fs.writeFileSync(hashFile, hash);
-    console.log('[tg-notify] Telegram message sent successfully');
+    console.log('[tg-notify] Telegram messages sent successfully');
   } catch (error) {
     console.error('[tg-notify] Failed to send Telegram message:', error.message);
   }
 }
 
-function fetchSub() {
+async function sendMessage(text) {
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  const params = new URLSearchParams({
+    chat_id: CHAT_ID,
+    text: text,
+    parse_mode: 'HTML'
+  });
+  await fetch(`${url}?${params}`, { method: 'POST' });
+}
+
+function fetchPath(urlPath) {
   return new Promise((resolve, reject) => {
-    const req = http.get(`http://localhost:${PORT}/${SUB_PATH}`, res => {
+    const req = http.get(`http://localhost:${PORT}${urlPath}`, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => resolve(data));
