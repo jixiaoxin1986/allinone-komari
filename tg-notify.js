@@ -46,11 +46,12 @@ async function sendTelegram() {
   } catch (e) { /* first run, no hash file */ }
 
   try {
-    const message = `${NAME}节点推送\n${sub}`;
+    const message = `${NAME}节点推送\n<pre>${sub}</pre>`;
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     const params = new URLSearchParams({
       chat_id: CHAT_ID,
-      text: message
+      text: message,
+      parse_mode: 'HTML'
     });
     await fetch(`${url}?${params}`, { method: 'POST' });
     fs.writeFileSync(hashFile, hash);
