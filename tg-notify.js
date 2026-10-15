@@ -3,6 +3,9 @@
 // 等待主程序启动后，从本地获取订阅内容并通过 Telegram bot 发送
 
 const http = require('http');
+const fs = require('fs');
+const crypto = require('crypto');
+const path = require('path');
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const CHAT_ID = process.env.CHAT_ID || '';
@@ -31,16 +34,26 @@ async function sendTelegram() {
     return;
   }
 
+  // 去重：内容没变就不重复推送
+  const hash = crypto.createHash('md5').update(sub).digest('hex');
+  const hashFile = path.join('/tmp', 'tg-notify-last.hash');
   try {
-    const escapedName = NAME.replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&');
-    const message = `**${escapedName}节点推送**\n\`\`\`${sub}\`\`\``;
+    const lastHash = fs.readFileSync(hashFile, 'utf8').trim();
+    if (lastHash === hash) {
+      console.log('[tg-notify] subscription unchanged, skipping duplicate push');
+      return;
+    }
+  } catch (e) { /* first run, no hash file */ }
+
+  try {
+    const message = `${NAME}节点推送\n${sub}`;
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     const params = new URLSearchParams({
       chat_id: CHAT_ID,
-      text: message,
-      parse_mode: 'MarkdownV2'
+      text: message
     });
     await fetch(`${url}?${params}`, { method: 'POST' });
+    fs.writeFileSync(hashFile, hash);
     console.log('[tg-notify] Telegram message sent successfully');
   } catch (error) {
     console.error('[tg-notify] Failed to send Telegram message:', error.message);
