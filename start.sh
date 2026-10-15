@@ -10,6 +10,14 @@ else
   echo "[start] KOMARI_SERVER/KOMARI_TOKEN not set, skipping komari-agent"
 fi
 
-# 2. 启动节点主程序（前台，保持容器运行）
+# 2. 启动 TG 推送脚本（后台，延迟执行）
+if [ -n "$BOT_TOKEN" ] && [ -n "$CHAT_ID" ]; then
+  echo "[start] launching tg-notify.js"
+  node tg-notify.js &
+else
+  echo "[start] BOT_TOKEN/CHAT_ID not set, skipping tg-notify"
+fi
+
+# 3. 启动节点主程序（前台，保持容器运行）
 echo "[start] launching node index.js"
 exec node index.js
