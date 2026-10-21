@@ -5,8 +5,8 @@
 # 1. 启动 Komari agent（如果配置了 SERVER 和 TOKEN）
 if [ -n "$KOMARI_SERVER" ] && [ -n "$KOMARI_TOKEN" ]; then
   echo "[start] launching komari-agent -> $KOMARI_SERVER"
-  # KOMARI_TOKEN 是 auto-discovery key（ad_开头），用 --auto-discovery 参数
-  komari-agent -e "$KOMARI_SERVER" --auto-discovery "$KOMARI_TOKEN" &
+  # KOMARI_TOKEN 是面板里该条目的固定 token，用 --token 参数（重启不产生重复条目）
+  komari-agent -e "$KOMARI_SERVER" --token "$KOMARI_TOKEN" &
 else
   echo "[start] KOMARI_SERVER/KOMARI_TOKEN not set, skipping komari-agent"
 fi
