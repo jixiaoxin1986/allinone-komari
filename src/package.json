@@ -1,23 +1,9 @@
 {
-  "name": "nzws-js",
-  "version": "0.1.0",
-  "description": "nzws-js",
+  "name": "northflank-udp-node",
+  "version": "1.0.0",
+  "description": "Northflank UDP node (xray-core family, Komari fixed token via env)",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "ws": "^8.21.2",
-    "axios": "^1.19.0",
-    "@grpc/grpc-js": "^1.14.4",
-    "@grpc/proto-loader": "^0.8.1",
-    "systeminformation": "^5.33.1"
-    
-  },
-  "optionalDependencies": {
-    "node-pty": "^1.1.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "axios": "latest" },
+  "engines": { "node": ">=14" }
 }
